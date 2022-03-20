@@ -57,8 +57,9 @@ export default function Meeting() {
 
   useEffect(() => {
     const init = async () => {
-      await livhub.initialize()
+      await livhub.initialize() // 初始化SDK
       livhub.on('userChange', ({ data }) => {
+        // 事件
         if (data.state === 'join') {
           setUserList((list) => [...list, data.user] as any)
         } else if (data.state === 'leave') {
@@ -66,6 +67,7 @@ export default function Meeting() {
         }
       })
       livhub.on('streamChange', ({ data }) => {
+        // 事件
         if (data.state === 'publish') {
           setUserList((list) => {
             const next = list.map((user) => {
@@ -104,22 +106,24 @@ export default function Meeting() {
       livhub.on('error', (e) => {
         console.log(e)
       })
-      await livhub.join()
+      await livhub.join() // 进入channel
       livhub.broadcast({
+        // 广播消息
         asda: 12312
       })
-      const userList = await livhub.getUserList()
+      const userList = await livhub.getUserList() // 获取当前频道用户列表
 
-      await localStreamRef.current.initialize()
+      await localStreamRef.current.initialize() // localStream初始化
       setLocalStreamState((p) => ({
         ...p,
         currentCamera: localStreamRef.current.getVideoTrack()?.getSettings().deviceId as string,
         currentMicroPhone: localStreamRef.current.getAudioTrack()?.getSettings().deviceId as string
       }))
-      livhub.publish(localStreamRef.current)
+      livhub.publish(localStreamRef.current) // 推送localStream
       setUserList(userList)
 
       localStreamRef.current.on('audioChange', ({ data }) => {
+        // localStream监听事件
         setLocalStreamState((p) => ({ ...p, audio: data.enabled }))
       })
       localStreamRef.current.on('videoChange', ({ data }) => {
