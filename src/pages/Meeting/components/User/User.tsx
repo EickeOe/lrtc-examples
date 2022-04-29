@@ -32,7 +32,6 @@ export default function User({
 
   const domRef = useRef<HTMLDivElement>(null)
   const click = () => {
-    console.log(activeUser, user)
     if (activeUser?.user?.id === user.id) {
       return
     }

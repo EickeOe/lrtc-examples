@@ -2,7 +2,7 @@ import { useQuery } from '@/hooks/useQuery'
 import { useHistory } from 'react-router-dom'
 import './index.less'
 import AudioBtn from './components/AudioBtn/AudioBtn'
-import { Button } from 'antd'
+import { Button, message } from 'antd'
 import VideoBtn from './components/VideoBtn'
 import ScreenBtn from './components/ScreenBtn'
 import UserList from './components/UserList/UserList'
@@ -11,7 +11,8 @@ import { useSetRecoilState, useRecoilValue, useRecoilState } from 'recoil'
 import { livhubState, localStreamState, localStreamStateState, userListState, userState } from './recoil'
 import MainView from './components/MainView/MainView'
 import createUseContext from '@/hooks/createUseContext'
-import Livhub, { LocalStream } from 'livhub'
+import Livhub, { ERROR_CODE, LocalStream } from 'livhub'
+import { getNextState } from '@/hooks/getNextState'
 export const [Provider, useContext] = createUseContext<{
   localStream: LocalStream
 }>({ localStream: null as any })
@@ -58,13 +59,24 @@ export default function Meeting() {
   useEffect(() => {
     const init = async () => {
       await livhub.initialize() // 初始化SDK
-      livhub.on('userChange', ({ data }) => {
+      livhub.on('userChange', async ({ data }) => {
+        const nextUser = await getNextState(setUser)
         // 事件
         if (data.state === 'join') {
-          setUserList((list) => [...list, data.user] as any)
+          if (data.user.id === nextUser.id) {
+            message.error('您已被踢下线！')
+            history.replace('/login')
+          }
         } else if (data.state === 'leave') {
-          setUserList((list) => list.filter((u1) => u1?.id !== data.user.id))
+          if (data.user.id === nextUser.id) {
+            message.error('您已被踢下线！')
+            history.replace('/login')
+          }
         }
+
+        // 直接从接口重新请求userList,不再从事件中处理userList
+        const userList = await livhub.getUserList()
+        setUserList(userList)
       })
       livhub.on('streamChange', ({ data }) => {
         // 事件
@@ -104,7 +116,11 @@ export default function Meeting() {
         console.log('broadcast', e)
       })
       livhub.on('error', (e) => {
-        console.log(e)
+        // 异地登录
+        if (e.code === ERROR_CODE.USER_REMOTE_SIGN_IN) {
+          message.error('您的账号已在异地登录！')
+          history.replace('/login')
+        }
       })
       await livhub.join() // 进入channel
       livhub.broadcast({
@@ -122,12 +138,12 @@ export default function Meeting() {
       livhub.publish(localStreamRef.current) // 推送localStream
       setUserList(userList)
 
-      localStreamRef.current.on('audioChange', ({ data }) => {
+      localStreamRef.current.on('audioChange', ({ mute }) => {
         // localStream监听事件
-        setLocalStreamState((p) => ({ ...p, audio: data.enabled }))
+        setLocalStreamState((p) => ({ ...p, audio: !mute }))
       })
-      localStreamRef.current.on('videoChange', ({ data }) => {
-        setLocalStreamState((p) => ({ ...p, video: data.enabled }))
+      localStreamRef.current.on('videoChange', ({ mute }) => {
+        setLocalStreamState((p) => ({ ...p, video: !mute }))
       })
     }
     init()
@@ -147,8 +163,21 @@ export default function Meeting() {
     unmuteAudio: localStreamRef.current.unmuteAudio,
     unmuteVideo: localStreamRef.current.unmuteVideo,
     shareScreen: async () => {
+      // 创建共享屏幕视频流
       localScreenStreamRef.current = Livhub.createLocalStream({ screen: true })
+      // 初始化
       await localScreenStreamRef.current.initialize()
+      // 渲染到dom节点
+      localScreenStreamRef.current.setRender(document.body)
+      // 监听videoChange事件
+      localScreenStreamRef.current.on('videoChange', ({ stop }) => {
+        // 当video 被停止后，删除渲染
+        if (stop) {
+          localScreenStreamRef.current.removeRender()
+          // 取消发布已经发布的屏幕共享本地流
+          livhub.unpublish(localScreenStreamRef.current)
+        }
+      })
       livhub.publish(localScreenStreamRef.current, 'desktop')
       setLocalStreamState((p) => ({ ...p, screen: true }))
     }

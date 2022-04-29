@@ -28,7 +28,6 @@ export default function VideoView({ streamList }: Props) {
     const v2 = ref.current?.lastElementChild
     v1?.classList.toggle('active')
     v2?.classList.toggle('active')
-    console.log(ref.current?.childNodes)
   }, [])
   return (
     <div className="videoView">

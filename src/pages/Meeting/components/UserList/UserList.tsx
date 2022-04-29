@@ -7,7 +7,6 @@ import { useRecoilValue } from 'recoil'
 
 export default function UserList() {
   const list = useRecoilValue(userListState)
-  // console.log(list)
   return (
     <div className="userList">
       <div style={{ padding: 12, fontSize: 18, fontWeight: 'bold' }}>会议成员</div>
