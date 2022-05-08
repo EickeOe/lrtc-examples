@@ -1,5 +1,4 @@
 import { List } from 'antd'
-import { useState } from 'react'
 import { userListState } from '../../recoil'
 import User from '../User/User'
 import './index.less'

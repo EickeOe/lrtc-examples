@@ -44,7 +44,7 @@ export default function Login() {
             <Checkbox>记住我</Checkbox>
           </Form.Item> */}
 
-          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+          <Form.Item style={{ textAlign: 'center' }}>
             <Button type="primary" htmlType="submit">
               开始会议
             </Button>

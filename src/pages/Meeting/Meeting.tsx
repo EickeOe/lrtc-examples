@@ -13,6 +13,8 @@ import MainView from './components/MainView/MainView'
 import createUseContext from '@/hooks/createUseContext'
 import Livhub, { ERROR_CODE, LocalStream } from 'livhub'
 import { getNextState } from '@/hooks/getNextState'
+import { useMedia } from 'react-use'
+import MobileUserList from './components/MobileUserList/MobileUserList'
 export const [Provider, useContext] = createUseContext<{
   localStream: LocalStream
 }>({ localStream: null as any })
@@ -62,17 +64,17 @@ export default function Meeting() {
       livhub.on('userChange', async ({ data }) => {
         const nextUser = await getNextState(setUser)
         // 事件
-        if (data.state === 'join') {
-          if (data.user.id === nextUser.id) {
-            message.error('您已被踢下线！')
-            history.replace('/login')
-          }
-        } else if (data.state === 'leave') {
-          if (data.user.id === nextUser.id) {
-            message.error('您已被踢下线！')
-            history.replace('/login')
-          }
-        }
+        // if (data.state === 'join') {
+        //   if (data.user.id === nextUser.id) {
+        //     message.error('您已被踢下线！')
+        //     history.replace('/login')
+        //   }
+        // } else if (data.state === 'leave') {
+        //   if (data.user.id === nextUser.id) {
+        //     message.error('您已被踢下线！')
+        //     history.replace('/login')
+        //   }
+        // }
 
         // 直接从接口重新请求userList,不再从事件中处理userList
         const userList = await livhub.getUserList()
@@ -115,13 +117,13 @@ export default function Meeting() {
       livhub.on('broadcast', (e) => {
         console.log('broadcast', e)
       })
-      livhub.on('error', (e) => {
-        // 异地登录
-        if (e.code === ERROR_CODE.USER_REMOTE_SIGN_IN) {
-          message.error('您的账号已在异地登录！')
-          history.replace('/login')
-        }
-      })
+      // livhub.on('error', (e) => {
+      //   // 异地登录
+      //   if (e.code === ERROR_CODE.USER_REMOTE_SIGN_IN) {
+      //     message.error('您的账号已在异地登录！')
+      //     history.replace('/login')
+      //   }
+      // })
       await livhub.join() // 进入channel
       livhub.broadcast({
         // 广播消息
@@ -130,6 +132,7 @@ export default function Meeting() {
       const userList = await livhub.getUserList() // 获取当前频道用户列表
 
       await localStreamRef.current.initialize() // localStream初始化
+
       setLocalStreamState((p) => ({
         ...p,
         currentCamera: localStreamRef.current.getVideoTrack()?.getSettings().deviceId as string,
@@ -168,7 +171,7 @@ export default function Meeting() {
       // 初始化
       await localScreenStreamRef.current.initialize()
       // 渲染到dom节点
-      localScreenStreamRef.current.setRender(document.body)
+      // localScreenStreamRef.current.setRender(document.body)
       // 监听videoChange事件
       localScreenStreamRef.current.on('videoChange', ({ stop }) => {
         // 当video 被停止后，删除渲染
@@ -185,24 +188,25 @@ export default function Meeting() {
 
   const pValue = useMemo(() => ({ localStream: localStreamRef.current }), [])
 
+  const isMobile = useMedia('(max-width: 768px)')
   return (
     <div className="meeting">
       <Provider value={pValue}>
-        <div className="header"></div>
-        <div className="content" style={{ display: 'flex' }}>
-          <div className="left" style={{ flex: 1 }}>
+        <div className="header">
+          <div>livhub demo - channel: {query.channelId}</div>
+        </div>
+        <div className="content">
+          <div className="left">
             <MainView />
           </div>
-          <div className="right">
-            <UserList />
-          </div>
+          <div className="right">{isMobile ? <MobileUserList /> : <UserList />}</div>
         </div>
         <div className="footer">
           <div className="toolbar">
             <div style={{ display: 'flex' }}>
               <AudioBtn actionRef={localAction} />
               <VideoBtn actionRef={localAction} />
-              <ScreenBtn actionRef={localAction} />
+              {!isMobile && <ScreenBtn actionRef={localAction} />}
             </div>
             <div>
               <Button danger onClick={onClose}>

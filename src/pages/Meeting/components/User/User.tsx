@@ -5,7 +5,7 @@ import VideoView from '../VideoView/VideoView'
 import { useRecoilValue, useRecoilState } from 'recoil'
 import { activeViewState, livhubState, localStreamState, userState } from '../../recoil'
 import { useRef } from 'react'
-import { useAsync } from 'react-use'
+import { useAsync, useMedia } from 'react-use'
 import { useContext } from '../../Meeting'
 
 export default function User({
@@ -42,12 +42,17 @@ export default function User({
     })
   }
 
+  const isMobile = useMedia('(max-width: 768px)')
   const { value: streamList = [] } = useAsync(async () => {
+    if (isMobile) {
+      return []
+    }
+
     if (currentUser.id === user.id) {
       return [contextValue.localStream]
     }
     return await Promise.all(user.streamList.map(async (stream) => await livhub.createRemoteStream(stream.id)))
-  }, [currentUser, user])
+  }, [currentUser, user, isMobile])
   return (
     <List.Item className="userItem" onClick={click}>
       <div ref={domRef} style={{ height: '100%', width: '100%' }}>

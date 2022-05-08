@@ -27,7 +27,7 @@ export default function ScreenBtn({ actionRef }: Props) {
           }
         }}
       >
-        <div>{localScreenStream.screen ? <DesktopOutlined /> : <DesktopOutlined />}</div>
+        <div style={{ fontSize: 20 }}>{localScreenStream.screen ? <DesktopOutlined /> : <DesktopOutlined />}</div>
         <div>{localScreenStream.screen ? '停止分享' : '分享屏幕'}</div>
       </Button>
       {/* <Dropdown

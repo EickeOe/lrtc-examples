@@ -28,7 +28,7 @@ export default function AudioBtn({ actionRef }: Props) {
   }, [])
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', width: 120, justifyContent: 'center' }}>
+    <div style={{ display: 'flex', alignItems: 'center' }}>
       <Button
         type="link"
         style={{ height: 'auto', paddingRight: 0 }}
@@ -40,7 +40,7 @@ export default function AudioBtn({ actionRef }: Props) {
           }
         }}
       >
-        <div style={{ fontSize: 24 }}>{localStreamState.audio ? <AudioOutlined /> : <AudioMutedOutlined />}</div>
+        <div style={{ fontSize: 20 }}>{localStreamState.audio ? <AudioOutlined /> : <AudioMutedOutlined />}</div>
         <div>{localStreamState.audio ? '静音' : '取消静音'}</div>
       </Button>
       <Dropdown

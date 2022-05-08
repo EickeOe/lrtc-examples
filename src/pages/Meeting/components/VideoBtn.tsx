@@ -23,7 +23,7 @@ export default function VideoBtn({ actionRef }: Props) {
     return await Livhub.getCameras()
   }, [])
   return (
-    <div style={{ display: 'flex', alignItems: 'center', width: 120, justifyContent: 'center' }}>
+    <div style={{ display: 'flex', alignItems: 'center' }}>
       <Button
         type="link"
         style={{ height: 'auto', paddingRight: 0 }}
@@ -35,13 +35,15 @@ export default function VideoBtn({ actionRef }: Props) {
           }
         }}
       >
-        <div>{localStreamState.video ? <VideoCameraOutlined /> : <VideoCameraAddOutlined />}</div>
+        <div style={{ fontSize: 20 }}>
+          {localStreamState.video ? <VideoCameraOutlined /> : <VideoCameraAddOutlined />}
+        </div>
         <div>{localStreamState.video ? '停止视频' : '开启视频'}</div>
       </Button>
       <Dropdown
         overlay={
           <Menu>
-            <Menu.ItemGroup title="选择麦克风">
+            <Menu.ItemGroup title="选择摄像头">
               {cameras.map((camera) => {
                 return (
                   <Menu.Item
@@ -54,10 +56,11 @@ export default function VideoBtn({ actionRef }: Props) {
                       )
                     }
                     onClick={async () => {
+                      console.log(camera)
                       if (localStreamState.currentCamera === camera.deviceId) {
                         return
                       }
-                      await localStream.switchDevice({ deviceId: camera.deviceId, type: 'audio' })
+                      await localStream.switchDevice({ deviceId: camera.deviceId, type: 'video' })
                       setLocalStreamState((p) => ({
                         ...p,
                         currentCamera: localStream.getVideoTrack()?.getSettings().deviceId as string
