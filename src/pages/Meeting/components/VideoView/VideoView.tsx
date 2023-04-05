@@ -1,20 +1,22 @@
 import type { LocalStream, RemoteStream } from 'livhub'
 import { SwitcherOutlined } from '@ant-design/icons'
-import { useCallback, useEffect, useRef } from 'react'
+import { memo, useCallback, useEffect, useRef } from 'react'
 import './index.less'
 
 interface Props {
   streamList: LocalStream[] | RemoteStream[]
 }
 
-export default function VideoView({ streamList }: Props) {
+export default memo(function VideoView({ streamList }: Props) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (streamList.length === 0) {
       return
     }
-    streamList.map((stream: any) => stream?.setRender(ref.current as HTMLDivElement))
+    streamList.map((stream: any) => {
+      stream?.setRender(ref.current as HTMLDivElement)
+    })
     ref.current?.firstElementChild?.classList.add('active')
 
     return () => {
@@ -43,4 +45,4 @@ export default function VideoView({ streamList }: Props) {
       </div>
     </div>
   )
-}
+})

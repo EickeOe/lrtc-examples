@@ -1,5 +1,5 @@
 import { useQuery } from '@/hooks/useQuery'
-import { Button, Checkbox, Form, Input } from 'antd'
+import { Button, Checkbox, Form, Input, Select } from 'antd'
 import { useForm } from 'antd/lib/form/Form'
 import { useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -13,7 +13,7 @@ export default function Login() {
   }
   const query = useQuery()
   useEffect(() => {
-    if (query.channelId && query.userId) {
+    if (query.channelId && query.userId && query.role) {
       form.setFieldsValue(query)
     }
   }, [])
@@ -25,7 +25,7 @@ export default function Login() {
           name="basic"
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
-          initialValues={{ remember: true }}
+          initialValues={{ remember: true, role: 0 }}
           onFinish={onFinish}
         >
           <Form.Item
@@ -38,6 +38,24 @@ export default function Login() {
 
           <Form.Item label="userId" name="userId" rules={[{ required: true, message: 'Please input your userId!' }]}>
             <Input />
+          </Form.Item>
+          <Form.Item label="角色" name="role" rules={[{ required: true, message: '请选择角色!' }]}>
+            <Select
+              options={[
+                {
+                  label: '拉流',
+                  value: 0
+                },
+                // {
+                //   label: '推流',
+                //   value: 1
+                // },
+                {
+                  label: '推拉流',
+                  value: 2
+                }
+              ]}
+            />
           </Form.Item>
 
           {/* <Form.Item name="remember" valuePropName="checked" wrapperCol={{ offset: 8, span: 16 }}>
